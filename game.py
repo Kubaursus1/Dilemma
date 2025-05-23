@@ -9,8 +9,7 @@ from deck import Deck
 from player import Player
 from gameState import GameState, GameResult
 
-class Game:        
-            
+class Game:                    
     class GameProxy:
         cardsToDraw = 4         
         def __init__(self, game:"Game"):
@@ -65,14 +64,9 @@ class Game:
         
         self.__gameState = GameState.STARTED
         
-        self.__deck = Deck()
-        self.__deck.shuffle()
-        
         self.__tricks = Tricks()
         
-        for _ in range(Game.fullHandSize):
-            transferCard(self.__deck.getTopCard(), self.__deck,self.__leader)
-            transferCard(self.__deck.getTopCard(), self.__deck,self.__nonLeader)
+        self.__startNewDeck()
     
     def __startNewDeck(self):
         self.__deck = Deck()
