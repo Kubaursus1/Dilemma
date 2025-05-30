@@ -10,6 +10,7 @@ from suit import Suit
 from card import Card
 from game import Game
 import os
+import uuid
 
 
 class PlayerMoveHandler:
@@ -115,7 +116,7 @@ def singleGameLoop(game:Game,playersDict:dict[str,PlayerMoveHandler]):
 def createGame(gameMode) -> tuple[Game, dict[str, PlayerMoveHandler]]:
     if int(gameMode) == 1:
         firstPlayerName = input("Podaj imię gracza ")
-        secondPlayerName = "Bot_1" #TODO: make bot name as UUID
+        secondPlayerName = uuid.uuid4()
         playerDict = {firstPlayerName: Human(), secondPlayerName: Bot()}
     else:
         firstPlayerName = input("Podaj imię pierwszego gracza ")
