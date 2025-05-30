@@ -182,6 +182,10 @@ class Game:
             return self.__nonLeader
         else:
             raise ValueError("Player does not exist")
+    def getFirstPlyerName(self):
+        return self.__firtsName
+    def getSecondPlayerName(self):
+        return self.__secondName
     def getActivePlayerCanNotPlaceCard(self) -> bool:
         return self.__activePlayerCanNotPlaceCard
     def getDeck(self) -> Deck:
