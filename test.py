@@ -16,26 +16,39 @@ import random
 
 class PlayerMoveHandler:
     def __init__(self, name):
-        self.__name = name
+        self._name = name
     def handlePlayerMove(self,game:Game)-> BaseResult:
         pass
     def setOpponent(self,opponent:"PlayerMoveHandler"):
-        self.__opponent = opponent
+        self._opponent = opponent
 class Bot(PlayerMoveHandler):
-   def handlePlayerMove(self, game:Game):
-       def handlePlaceCardMove() -> BaseResult:
-            if game.getTricks().getCurrentTrick().len() == 1:
-                pass
+    def handlePlayerMove(self, game:Game):
+        def handlePlaceCardMove() -> BaseResult:
+            trickSuits = set(map( lambda card : card.getSuit().value, game.getTricks().getCurrentTrick().getAllCards()))
+            allSuits = set(e.value for e in Suit)
+            lackingSuits = allSuits-trickSuits
+            cards = list(filter(lambda card : card.getSuit().value in lackingSuits, game.getPlayerByName(self._name).getHand())) if lackingSuits else game.getPlayerByName(self._name).getHand()
+            currentTrick = game.getTricks().getCurrentTrick()
+            if currentTrick.len() == 1:
+                firstCardRank = currentTrick.first().getRank().value
+                bestCardRankChoose = list(filter(lambda card : card.getRank().value > firstCardRank and card.getRank().value <= firstCardRank+3, cards))
+                if bestCardRankChoose:
+                    chossenCard = random.choice(bestCardRankChoose)
+                else:
+                    chossenCard = random.choice(cards)
             elif game.getTricks().getCurrentTrick().len() == 3:
-                pass
+                botCradRank = currentTrick.first().getRank().value
+                playerCardsRank = sum(map(lambda card : card.getRank().value ,currentTrick.getCardsByIndexes([1,2])))
+                botHighestCardRank = max(map(lambda card : card.getRank().value, cards))
+                if (botCradRank + botHighestCardRank) > playerCardsRank:
+                    chossenCard = list(filter(lambda card : card.getRank().value == botHighestCardRank, cards))[0]
+                else:
+                    chossenCard = random.choice(cards)
             else:
-                actualPlayerHand = game.getPlayerByName(self.__name).getHand()
-                trickSuits = set(map( lambda card : card.getSuit().value, game.getTricks().getCurrentTrick().getAllCards()))
-                allSuits = set(e.value for e in Suit)
-                lackingSuits = allSuits-trickSuits
-                cards = list(filter(lambda card : card.getSuit().value in lackingSuits, actualPlayerHand))
                 chossenCard = random.choice(cards)
-            game.tryPlaceCardByActivePlayer(chossenCard)
+            return game.tryPlaceCardByActivePlayer(chossenCard)
+        time.sleep(3)
+        return handlePlaceCardMove()
            
 class Human(PlayerMoveHandler):
     def handlePlayerMove(self,game:Game)-> BaseResult:
@@ -130,9 +143,10 @@ def singleGameLoop(game:Game,playersDict:dict[str,PlayerMoveHandler], gameMode: 
         result = playersDict[activePlayerName].handlePlayerMove(game)
         if isinstance(result, ErrorResult):
             isError = result
-    
-    for p in game.getPlayers():
-        print(f"{p.getName()} score: {p.getScore()}")
+    playersNames = list(playersDict.keys())
+
+    print(f"{playersNames[0]} score: {game.getPlayerByName(playersNames[0]).getScore()}")
+    print(f"{playersNames[1] if gameMode == 2 else "Bot"} score: {game.getPlayerByName(playersNames[1]).getScore()}")
     printWinner(game, gameMode)
 
 def createGame(gameMode) -> tuple[Game, dict[str, PlayerMoveHandler]]:
@@ -157,8 +171,8 @@ def createGame(gameMode) -> tuple[Game, dict[str, PlayerMoveHandler]]:
         
     return (game, playerDict)
 
+gameMode = input("Wybierz tryb gry: 1- gra z Botem, 2- Gra z człowiekiem: ")
 while(True):
-    gameMode = input("Wybierz tryb gry: 1- gra z Botem, 2- Gra z człowiekiem")
     game, playersDict = createGame(gameMode)
     game.startNewDealAndStartGame()
     
@@ -167,5 +181,5 @@ while(True):
     shouldPlayAgain = input("Czy chasz zagrać ponownie.(Y/N) ")
     if shouldPlayAgain.upper() == "N":
         break
-# TODO: dokończyć przypadki bota na ruchu w tricku
+    gameMode = input("Wybierz '1' Jeżeli chcesz jeszcze raz zagrać z Botem lub '2' jeżeli z drugim graczem: ")
 # TODO: załatwić handleExchengeMove

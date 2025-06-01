@@ -1,4 +1,5 @@
 from typing import Callable, Optional
+import uuid
 from move import PlaceCardMove
 from MoveResult.baseResult import BaseResult
 from card import Card
@@ -199,6 +200,6 @@ class Game:
     def __repr__(self) -> str:
         return f" State: {self.__gameState} \n Deck: {self.__deck}\n Tricks: {self.__tricks} \n Leader: {self.__leader} \n Non-leader: {self.__nonLeader} \nActive: {self.__activePlayer.getName()} "    
     def __str__(self) -> str:
-        return f" Tricks: {self.__tricks} \n {self.__firtsName}: {self.getPlayerByName(self.__firtsName).getScore()} \n {self.__secondName}: {self.getPlayerByName(self.__secondName).getScore()} "    
+        return f" Tricks: {self.__tricks} \n {self.__firtsName}: {self.getPlayerByName(self.__firtsName).getScore()} \n {self.__secondName if not isinstance(self.__secondName, uuid.UUID) else "Bot"}: {self.getPlayerByName(self.__secondName).getScore()} "    
     def getTricks(self) ->Tricks:
         return self.__tricks
