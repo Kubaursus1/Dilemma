@@ -1,4 +1,5 @@
 import copy
+import uuid
 from card import Card
 from cardscollection import CardsCollection
 
@@ -18,7 +19,7 @@ class Player(CardsCollection):
         return copy.copy(self.__hand)
     
     def __repr__(self) -> str:
-        return f"{self.__name}, score: {self.__score}, hand: {str(self.__hand)}"
+        return self.__name if not isinstance(self.__name, uuid.UUID) else "Bot"
     
     def assignScore(self, trick):
         last_card = trick.last()

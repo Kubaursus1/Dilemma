@@ -47,34 +47,47 @@ class Bot(PlayerMoveHandler):
             else:
                 chossenCard = random.choice(cards)
             return game.tryPlaceCardByActivePlayer(chossenCard)
-        time.sleep(3)
-        return handlePlaceCardMove()
+        def handleExchangeMove() -> BaseResult:
+            pass
+        for _ in range(4):
+            for i in ["|", "/", "-", "\\"]:
+                print(f"\r{i}", end="")
+                time.sleep(0.15)
+        return handleExchangeMove() if game.getActivePlayerCanNotPlaceCard() else handlePlaceCardMove()
            
 class Human(PlayerMoveHandler):
     def handlePlayerMove(self,game:Game)-> BaseResult:
-        def showCardsAndCollectInput(targetPlayer: Player, suits: set[str]) -> Card: 
+        def showCardsAndCollectInput(targetPlayer: Player, suits: set[str], additionlText=None) -> Card: 
             print(f"{targetPlayer.getName()}, wybierz kartę.")
             
             cards = list(filter(lambda card : card.getSuit().value in suits, targetPlayer.getHand()))
-            print(f"[{colorama.Fore.GREEN}{cards[0]}{colorama.Style.RESET_ALL}", *cards[1:-1], sep=", ", end=f", {cards[-1]}]\n")
-            return chooseCardWithKeyboard(cards, targetPlayer)
+            print(f"[{colorama.Fore.GREEN}{cards[0]}{colorama.Style.RESET_ALL}",", " + ", ".join(str(card) for card in cards[1:]) if len(cards) != 1 else "", "]", sep="")
+            return chooseCardWithKeyboard(cards, targetPlayer, additionalText=additionlText if additionlText !=None else None)
         def handleExchangeMove() -> BaseResult:
             trickSuits = set(map( lambda card : card.getSuit().value, game.getTricks().getCurrentTrick().getAllCards()))
             allSuits = set(e.value for e in Suit)
             lackingSuits = allSuits-trickSuits
         
             #przeciwnik -oddzielna funkcja w klasie PlayerMoveHandler
-            print(f"{game.getNonActivePlayer()} przekazuje kartę {game.getActivePlayer()}\n")
-            chosenCardByNonActivePlayer = showCardsAndCollectInput(game.getNonActivePlayer(), lackingSuits)
+            additionalText = f"{game.getNonActivePlayer()} przekazuje kartę {game.getActivePlayer()}\n"
+            print(additionalText)
+            chosenCardByNonActivePlayer = showCardsAndCollectInput(game.getNonActivePlayer(), lackingSuits, additionlText=additionalText)
 
-            #przeciwnik -oddzielna funkcja w klasie PlayerMoveHandler                                                          
-            activePlayerSuits = list(set(map( lambda card : card.getSuit().value, game.getActivePlayer().getHand())))
-            print(f"{game.getNonActivePlayer()}, wybierz kolor jaki chcesz otrzymać")
-            print(activePlayerSuits)
-            chosenSuitByNonActivePlayer = activePlayerSuits[int(input("nr: "))]
+            #przeciwnik -oddzielna funkcja w klasie PlayerMoveHandler  
+            os.system("cls")   
+            print(game)                                 
+            activePlayerSuits: list[str] = list(set(map( lambda card : card.getSuit().value, game.getActivePlayer().getHand())))
+            additionalText = f"{game.getNonActivePlayer()}, wybierz kolor jaki chcesz otrzymać"
+            print(additionalText)
+            print(f"[{colorama.Fore.GREEN}{activePlayerSuits[0]}{colorama.Style.RESET_ALL}",", " + ", ".join(str(suit) for suit in activePlayerSuits[1:]) if len(activePlayerSuits) != 1 else "", "]", sep="")
+            chosenSuitByNonActivePlayer = chooseCardWithKeyboard(activePlayerSuits, game.getNonActivePlayer(), additionalText=additionalText)
             
             #my
-            chosenCardByActivePlayer = showCardsAndCollectInput(game.getActivePlayer(), set(chosenSuitByNonActivePlayer))
+            os.system("cls")
+            print(game)
+            additionalText = f"{game.getActivePlayer()}, przekaż kartę {game.getNonActivePlayer()} z kształtu jaki chce otrzymać"
+            print(additionalText)
+            chosenCardByActivePlayer = showCardsAndCollectInput(game.getActivePlayer(), set(chosenSuitByNonActivePlayer), additionlText=additionalText)
             
             return game.tryExchangeAndPlaceCardByActivePlayer(chosenCardByActivePlayer, chosenCardByNonActivePlayer)
         def handlePlaceCardMove()-> BaseResult:       
@@ -99,15 +112,15 @@ def printWinner(game: Game, gameMode: int):
             result = "No one wins. Draw"
     print(result)
 
-def chooseCardWithKeyboard(hand: list[Card], targetPlayer: Player) -> Card:
+def chooseCardWithKeyboard(hand: list[Card] | list[str], targetPlayer: Player, additionalText=None) -> Card:
     i = 0
     chosenCard = None
     def refreshTerminal():
         os.system("cls")
         print(game)
-        print(f"{targetPlayer.getName()}, wybierz kartę.")
-        cards = ', '.join(f"{colorama.Fore.GREEN}{card}{colorama.Style.RESET_ALL}" if idx == i else str(card) for idx, card in enumerate(hand))
-        print(f"[{cards}]")
+        print(additionalText) if additionalText != None else None
+        print(f"{targetPlayer.getName()}, wybierz kartę.") if isinstance(hand[0], Card) else None
+        print(f"[", ', '.join(f"{colorama.Fore.GREEN}{card}{colorama.Style.RESET_ALL}" if idx == i else str(card) for idx, card in enumerate(hand)), "]", sep="")
     def changeIdxToPrevious():
         nonlocal i
         i = (i - 1) % len(hand)
@@ -150,28 +163,39 @@ def singleGameLoop(game:Game,playersDict:dict[str,PlayerMoveHandler], gameMode: 
     printWinner(game, gameMode)
 
 def createGame(gameMode) -> tuple[Game, dict[str, PlayerMoveHandler]]:
-    if int(gameMode) == 1:
-        firstPlayerName = input("Podaj imię gracza ")
-        secondPlayerName = uuid.uuid4()
-        human = Human(firstPlayerName)
-        bot = Bot(secondPlayerName)
-        human.setOpponent(bot)
-        bot.setOpponent(human)
-        playerDict = {firstPlayerName: human, secondPlayerName: bot}
-    else:
-        firstPlayerName = input("Podaj imię pierwszego gracza ")
-        secondPlayerName = input("Podaj imię drugiego gracza ")
-        human1 = Human(firstPlayerName)
-        human2 = Human(secondPlayerName)
-        human1.setOpponent(human2)
-        human2.setOpponent(human1)
-        playerDict = {firstPlayerName: human1, secondPlayerName: human2}
+    def __preparingPlayers(gameMode):
+        if int(gameMode) == 1:
+            firstPlayerName = input("Podaj imię gracza ")
+            secondPlayerName = uuid.uuid4()
+            human = Human(firstPlayerName)
+            bot = Bot(secondPlayerName)
+            human.setOpponent(bot)
+            bot.setOpponent(human)
+            playerDict = {firstPlayerName: human, secondPlayerName: bot}
+        else:
+            firstPlayerName = input("Podaj imię pierwszego gracza ")
+            secondPlayerName = input("Podaj imię drugiego gracza ")
+            human1 = Human(firstPlayerName)
+            human2 = Human(secondPlayerName)
+            human1.setOpponent(human2)
+            human2.setOpponent(human1)
+            playerDict = {firstPlayerName: human1, secondPlayerName: human2}
+        return firstPlayerName,secondPlayerName,playerDict
+    firstPlayerName, secondPlayerName, playerDict = __preparingPlayers(gameMode)
+
+    while(firstPlayerName == secondPlayerName or len(firstPlayerName) == 0 or len(secondPlayerName) == 0):
+        print()
+        print("Imiona graczy muszą być różne i nie puste") if gameMode == 2 else print("Imię gracza nie może być puste")
+        firstPlayerName, secondPlayerName, playerDict = __preparingPlayers(gameMode)
 
     game = Game(firstPlayerName, secondPlayerName)
         
     return (game, playerDict)
 
-gameMode = input("Wybierz tryb gry: 1- gra z Botem, 2- Gra z człowiekiem: ")
+gameMode = input("Wybierz tryb gry: 1- gra z Botem, 2- gra w dwie osoby: ")
+while(gameMode not in ["1", "2"]):
+    print("Nie ma takiego trybu gry wpisz odpowiednie numery ")
+    gameMode = input("1- gra z botem, 2- gra w dwie osoby ")
 while(True):
     game, playersDict = createGame(gameMode)
     game.startNewDealAndStartGame()

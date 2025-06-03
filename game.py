@@ -48,7 +48,7 @@ class Game:
         def setActivePlayerCanNotPlaceCard(self, activePlayerCanNotPlaceCard:bool):
             self.game._Game__activePlayerCanNotPlaceCard = activePlayerCanNotPlaceCard # type: ignore
     
-    fullHandSize = 12
+    fullHandSize = 5
     winningScore = 100
         
     def __init__(self, firstPlayerName:str,secondPlayerName:str):
