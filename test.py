@@ -17,10 +17,39 @@ import random
 class PlayerMoveHandler:
     def __init__(self, name):
         self._name = name
+    def showCardsAndCollectInput(targetPlayer: Player, suits: set[str], additionlText=None) -> Card: 
+        print(f"{targetPlayer.getName()}, wybierz kartę.")
+            
+        cards = list(filter(lambda card : card.getSuit().value in suits, targetPlayer.getHand()))
+        print(f"[{colorama.Fore.GREEN}{cards[0]}{colorama.Style.RESET_ALL}",", " + ", ".join(str(card) for card in cards[1:]) if len(cards) != 1 else "", "]", sep="")
+        return chooseCardWithKeyboard(cards, targetPlayer, additionalText=additionlText if additionlText !=None else None)
+    def lackingSuitsCalculator():
+            trickSuits = set(map( lambda card : card.getSuit().value, game.getTricks().getCurrentTrick().getAllCards()))
+            allSuits = set(e.value for e in Suit)
+            lackingSuits = allSuits-trickSuits
+            return lackingSuits
+    def humanChoosingSystem(self, lackingSuits):
+            additionalText = f"{game.getNonActivePlayer()} przekazuje kartę {game.getActivePlayer() if isinstance(self._opponent, Human) else "Bot'owi"}\n"
+            print(additionalText)
+            chosenCardByNonActivePlayer = self.showCardsAndCollectInput(game.getNonActivePlayer(), lackingSuits, additionlText=additionalText)
+
+            os.system("cls")   
+            print(game)                                 
+            activePlayerSuits: list[str] = list(set(map( lambda card : card.getSuit().value, game.getActivePlayer().getHand())))
+            additionalText = f"{game.getNonActivePlayer()}, wybierz kolor jaki chcesz otrzymać"
+            print(additionalText)
+            print(f"[{colorama.Fore.GREEN}{activePlayerSuits[0]}{colorama.Style.RESET_ALL}",", " + ", ".join(str(suit) for suit in activePlayerSuits[1:]) if len(activePlayerSuits) != 1 else "", "]", sep="")
+            chosenSuitByNonActivePlayer = chooseCardWithKeyboard(activePlayerSuits, game.getNonActivePlayer(), additionalText=additionalText)
+            return (chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer)
     def handlePlayerMove(self,game:Game)-> BaseResult:
         pass
     def setOpponent(self,opponent:"PlayerMoveHandler"):
         self._opponent = opponent
+    def cardChoosingAnimation(self):
+        for _ in range(4):
+            for i in ["|", "/", "-", "\\"]:
+                print(f"\r{i}", end="")
+                time.sleep(0.15)
 class Bot(PlayerMoveHandler):
     def handlePlayerMove(self, game:Game):
         def handlePlaceCardMove() -> BaseResult:
@@ -46,53 +75,46 @@ class Bot(PlayerMoveHandler):
                     chossenCard = random.choice(cards)
             else:
                 chossenCard = random.choice(cards)
+            self.cardChoosingAnimation()
             return game.tryPlaceCardByActivePlayer(chossenCard)
         def handleExchangeMove() -> BaseResult:
-            pass
-        for _ in range(4):
-            for i in ["|", "/", "-", "\\"]:
-                print(f"\r{i}", end="")
-                time.sleep(0.15)
+            lackingSuits = self.lackingSuitsCalculator()
+            chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer = self.humanChoosingSystem(lackingSuits)
+            os.system("cls")
+            print(game)
+            print("Bot wybiera kartę")
+            self.cardChoosingAnimation()
+            chosenCardByActivePlayer = random.choice(list(filter(lambda card : card.getSuit().value in set(chosenSuitByNonActivePlayer), game.getActivePlayer().getHand())))
+            return game.tryExchangeAndPlaceCardByActivePlayer(chosenCardByActivePlayer, chosenCardByNonActivePlayer)
         return handleExchangeMove() if game.getActivePlayerCanNotPlaceCard() else handlePlaceCardMove()
            
 class Human(PlayerMoveHandler):
     def handlePlayerMove(self,game:Game)-> BaseResult:
-        def showCardsAndCollectInput(targetPlayer: Player, suits: set[str], additionlText=None) -> Card: 
-            print(f"{targetPlayer.getName()}, wybierz kartę.")
-            
-            cards = list(filter(lambda card : card.getSuit().value in suits, targetPlayer.getHand()))
-            print(f"[{colorama.Fore.GREEN}{cards[0]}{colorama.Style.RESET_ALL}",", " + ", ".join(str(card) for card in cards[1:]) if len(cards) != 1 else "", "]", sep="")
-            return chooseCardWithKeyboard(cards, targetPlayer, additionalText=additionlText if additionlText !=None else None)
         def handleExchangeMove() -> BaseResult:
-            trickSuits = set(map( lambda card : card.getSuit().value, game.getTricks().getCurrentTrick().getAllCards()))
-            allSuits = set(e.value for e in Suit)
-            lackingSuits = allSuits-trickSuits
-        
-            #przeciwnik -oddzielna funkcja w klasie PlayerMoveHandler
-            additionalText = f"{game.getNonActivePlayer()} przekazuje kartę {game.getActivePlayer()}\n"
-            print(additionalText)
-            chosenCardByNonActivePlayer = showCardsAndCollectInput(game.getNonActivePlayer(), lackingSuits, additionlText=additionalText)
+            lackingSuits = self.lackingSuitsCalculator()
 
-            #przeciwnik -oddzielna funkcja w klasie PlayerMoveHandler  
-            os.system("cls")   
-            print(game)                                 
-            activePlayerSuits: list[str] = list(set(map( lambda card : card.getSuit().value, game.getActivePlayer().getHand())))
-            additionalText = f"{game.getNonActivePlayer()}, wybierz kolor jaki chcesz otrzymać"
-            print(additionalText)
-            print(f"[{colorama.Fore.GREEN}{activePlayerSuits[0]}{colorama.Style.RESET_ALL}",", " + ", ".join(str(suit) for suit in activePlayerSuits[1:]) if len(activePlayerSuits) != 1 else "", "]", sep="")
-            chosenSuitByNonActivePlayer = chooseCardWithKeyboard(activePlayerSuits, game.getNonActivePlayer(), additionalText=additionalText)
-            
-            #my
+            if isinstance(self._opponent, Human):
+                chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer = self.humanChoosingSystem(lackingSuits)
+            elif isinstance(self._opponent, Bot):
+                print("Bot wybiera kartę")
+                self.cardChoosingAnimation()
+                chosenCardByNonActivePlayer = random.choice(list(filter(lambda card : card.getSuit().value in lackingSuits, game.getNonActivePlayer().getHand())))
+                os.system("cls")
+                print(game)
+                print("Bot wybiera kształt")
+                self.cardChoosingAnimation()
+                chosenSuitByNonActivePlayer = list(set(map(lambda card : card.getSuit().value, game.getActivePlayer().getHand())))
             os.system("cls")
             print(game)
             additionalText = f"{game.getActivePlayer()}, przekaż kartę {game.getNonActivePlayer()} z kształtu jaki chce otrzymać"
             print(additionalText)
-            chosenCardByActivePlayer = showCardsAndCollectInput(game.getActivePlayer(), set(chosenSuitByNonActivePlayer), additionlText=additionalText)
+            chosenCardByActivePlayer = self.showCardsAndCollectInput(game.getActivePlayer(), set(chosenSuitByNonActivePlayer), additionlText=additionalText)
             
             return game.tryExchangeAndPlaceCardByActivePlayer(chosenCardByActivePlayer, chosenCardByNonActivePlayer)
+
         def handlePlaceCardMove()-> BaseResult:       
             allSuits = set(e.value for e in Suit)
-            card = showCardsAndCollectInput(game.getActivePlayer(),allSuits)
+            card = self.showCardsAndCollectInput(game.getActivePlayer(),allSuits)
 
             return game.tryPlaceCardByActivePlayer(card)
     
@@ -206,4 +228,5 @@ while(True):
     if shouldPlayAgain.upper() == "N":
         break
     gameMode = input("Wybierz '1' Jeżeli chcesz jeszcze raz zagrać z Botem lub '2' jeżeli z drugim graczem: ")
-# TODO: załatwić handleExchengeMove
+# TODO: oddzielić classy MoveHandlers do innego pliku
+# TODO: refactoring
