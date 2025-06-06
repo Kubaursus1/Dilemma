@@ -17,13 +17,13 @@ import random
 class PlayerMoveHandler:
     def __init__(self, name):
         self._name = name
-    def showCardsAndCollectInput(targetPlayer: Player, suits: set[str], additionlText=None) -> Card: 
+    def showCardsAndCollectInput(self, targetPlayer: Player, suits: set[str], additionlText=None) -> Card: 
         print(f"{targetPlayer.getName()}, wybierz kartę.")
             
         cards = list(filter(lambda card : card.getSuit().value in suits, targetPlayer.getHand()))
         print(f"[{colorama.Fore.GREEN}{cards[0]}{colorama.Style.RESET_ALL}",", " + ", ".join(str(card) for card in cards[1:]) if len(cards) != 1 else "", "]", sep="")
         return chooseCardWithKeyboard(cards, targetPlayer, additionalText=additionlText if additionlText !=None else None)
-    def lackingSuitsCalculator():
+    def lackingSuitsCalculator(self):
             trickSuits = set(map( lambda card : card.getSuit().value, game.getTricks().getCurrentTrick().getAllCards()))
             allSuits = set(e.value for e in Suit)
             lackingSuits = allSuits-trickSuits
@@ -36,7 +36,7 @@ class PlayerMoveHandler:
             os.system("cls")   
             print(game)                                 
             activePlayerSuits: list[str] = list(set(map( lambda card : card.getSuit().value, game.getActivePlayer().getHand())))
-            additionalText = f"{game.getNonActivePlayer()}, wybierz kolor jaki chcesz otrzymać"
+            additionalText = f"{game.getNonActivePlayer()}, wybierz kształt jaki chcesz otrzymać"
             print(additionalText)
             print(f"[{colorama.Fore.GREEN}{activePlayerSuits[0]}{colorama.Style.RESET_ALL}",", " + ", ".join(str(suit) for suit in activePlayerSuits[1:]) if len(activePlayerSuits) != 1 else "", "]", sep="")
             chosenSuitByNonActivePlayer = chooseCardWithKeyboard(activePlayerSuits, game.getNonActivePlayer(), additionalText=additionalText)
@@ -45,8 +45,8 @@ class PlayerMoveHandler:
         pass
     def setOpponent(self,opponent:"PlayerMoveHandler"):
         self._opponent = opponent
-    def cardChoosingAnimation(self):
-        for _ in range(4):
+    def cardChoosingAnimation(self, animationTimesCount: int):
+        for _ in range(animationTimesCount):
             for i in ["|", "/", "-", "\\"]:
                 print(f"\r{i}", end="")
                 time.sleep(0.15)
@@ -75,7 +75,7 @@ class Bot(PlayerMoveHandler):
                     chossenCard = random.choice(cards)
             else:
                 chossenCard = random.choice(cards)
-            self.cardChoosingAnimation()
+            self.cardChoosingAnimation(4)
             return game.tryPlaceCardByActivePlayer(chossenCard)
         def handleExchangeMove() -> BaseResult:
             lackingSuits = self.lackingSuitsCalculator()
@@ -83,7 +83,7 @@ class Bot(PlayerMoveHandler):
             os.system("cls")
             print(game)
             print("Bot wybiera kartę")
-            self.cardChoosingAnimation()
+            self.cardChoosingAnimation(6)
             chosenCardByActivePlayer = random.choice(list(filter(lambda card : card.getSuit().value in set(chosenSuitByNonActivePlayer), game.getActivePlayer().getHand())))
             return game.tryExchangeAndPlaceCardByActivePlayer(chosenCardByActivePlayer, chosenCardByNonActivePlayer)
         return handleExchangeMove() if game.getActivePlayerCanNotPlaceCard() else handlePlaceCardMove()
@@ -97,12 +97,12 @@ class Human(PlayerMoveHandler):
                 chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer = self.humanChoosingSystem(lackingSuits)
             elif isinstance(self._opponent, Bot):
                 print("Bot wybiera kartę")
-                self.cardChoosingAnimation()
+                self.cardChoosingAnimation(6)
                 chosenCardByNonActivePlayer = random.choice(list(filter(lambda card : card.getSuit().value in lackingSuits, game.getNonActivePlayer().getHand())))
                 os.system("cls")
                 print(game)
                 print("Bot wybiera kształt")
-                self.cardChoosingAnimation()
+                self.cardChoosingAnimation(6)
                 chosenSuitByNonActivePlayer = list(set(map(lambda card : card.getSuit().value, game.getActivePlayer().getHand())))
             os.system("cls")
             print(game)
@@ -205,7 +205,7 @@ def createGame(gameMode) -> tuple[Game, dict[str, PlayerMoveHandler]]:
         return firstPlayerName,secondPlayerName,playerDict
     firstPlayerName, secondPlayerName, playerDict = __preparingPlayers(gameMode)
 
-    while(firstPlayerName == secondPlayerName or len(firstPlayerName) == 0 or len(secondPlayerName) == 0):
+    while(firstPlayerName == secondPlayerName or len(firstPlayerName) == 0 or (len(secondPlayerName) == 0 if not isinstance(secondPlayerName, uuid.UUID) else False)):
         print()
         print("Imiona graczy muszą być różne i nie puste") if gameMode == 2 else print("Imię gracza nie może być puste")
         firstPlayerName, secondPlayerName, playerDict = __preparingPlayers(gameMode)
