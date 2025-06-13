@@ -8,7 +8,7 @@ from utis import chooseCardWithKeyboard
 
 
 class Human(PlayerMoveHandler):
-    def _nonActivePlayerChoices(self,lackingSuits) -> tuple[Card, Suit]:
+    def _nonActivePlayerChoices(self,lackingSuits:set[str]) -> tuple[Card, Suit]:
         additionalText = f"{self._game.getNonActivePlayer()} przekazuje kartę {self._game.getActivePlayer() if isinstance(self._opponent, Human) else 'Bot,owi'}\n"
         print(additionalText)
         chosenCardByNonActivePlayer = self.showCardsAndCollectInput(self._game.getNonActivePlayer(), lackingSuits, additionlText=additionalText)
@@ -22,9 +22,9 @@ class Human(PlayerMoveHandler):
         chosenSuitByNonActivePlayer = chooseCardWithKeyboard(self._game,activePlayerSuits, self._game.getNonActivePlayer(), additionalText=additionalText)
         return (chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer)
 
-    def _handleExchangeMove(self) -> BaseResult:
-        lackingSuits = self.lackingSuitsCalculator()
-        chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer  = self._opponent._nonActivePlayerChoices(lackingSuits)
+    def _handleExchangeMove(self ) -> BaseResult:
+        lackingSuits = self.lackingSuitsCalculator(self._game)
+        chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer  = self._opponent._nonActivePlayerChoices(lackingSuits, self._game)
                         
         os.system("cls")
         print(self._game)
@@ -34,7 +34,7 @@ class Human(PlayerMoveHandler):
         
         return self._game.tryExchangeAndPlaceCardByActivePlayer(chosenCardByActivePlayer, chosenCardByNonActivePlayer)
             
-    def _handlePlaceCardMove(self)-> BaseResult:       
+    def _handlePlaceCardMove(self )-> BaseResult:       
         allSuits = set(e.value for e in Suit)
         card = self.showCardsAndCollectInput(self._game.getActivePlayer(),allSuits)
 

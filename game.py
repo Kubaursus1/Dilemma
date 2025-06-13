@@ -142,7 +142,7 @@ class Game:
         if self.__activePlayerCanNotPlaceCard:
             raise RuntimeError("No moves possible, in this state You must only call 'tryExchangeAndPlaceCardByActivePlayer' method")            
         if card not in self.__activePlayer.getHand(): 
-            raise ValueError("Invalid card owner","card")
+            raise ValueError("Invalid card owner",f"{card}")
         
         result = self.__tricks.tryPlaceCard(PlaceCardMove(self.__activePlayer,card))               
         result.handle(self.__proxy)

@@ -74,5 +74,3 @@ while(True):
     if shouldPlayAgain.upper() == "N":
         break
     gameMode = input("Wybierz '1' Jeżeli chcesz jeszcze raz zagrać z Botem lub '2' jeżeli z drugim graczem: ")
-# TODO: oddzielić classy MoveHandlers do innego pliku
-# TODO: refactoring

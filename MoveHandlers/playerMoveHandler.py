@@ -2,7 +2,6 @@ import time
 import colorama
 from MoveResult.baseResult import BaseResult
 from card import Card
-
 from player import Player
 from suit import Suit
 from utis import chooseCardWithKeyboard
@@ -19,7 +18,7 @@ class PlayerMoveHandler:
     def setOpponent(self,opponent:"PlayerMoveHandler"):
         self._opponent = opponent        
         
-    def showCardsAndCollectInput(self, targetPlayer: Player, suits: set[str], additionlText=None) -> Card: 
+    def showCardsAndCollectInput(self, targetPlayer: Player, suits: set[str],additionlText=None) -> Card: 
         print(f"{targetPlayer.getName()}, wybierz kartę.")
             
         cards = list(filter(lambda card : card.getSuit().value in suits, targetPlayer.getHand()))
@@ -46,6 +45,6 @@ class PlayerMoveHandler:
     def _handleExchangeMove(self) -> BaseResult:
         pass
 
-    def _nonActivePlayerChoices(self) -> tuple[Card, Suit]:
+    def _nonActivePlayerChoices(self,lackingSuits: set[str]) -> tuple[Card, Suit]:
         pass
                   

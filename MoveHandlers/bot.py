@@ -7,7 +7,7 @@ from suit import Suit
 
 class Bot(PlayerMoveHandler):
 
-    def _nonActivePlayerChoices(self,lackingSuits) -> tuple[Card, Suit]:
+    def _nonActivePlayerChoices(self,lackingSuits, game:Game) -> tuple[Card, Suit]:
         print("Bot wybiera kartę")
         self.cardChoosingAnimation(6)
         chosenCardByNonActivePlayer = random.choice(list(filter(lambda card : card.getSuit().value in lackingSuits, self._game.getNonActivePlayer().getHand())))
@@ -26,7 +26,7 @@ class Bot(PlayerMoveHandler):
         currentTrick = self._game.getTricks().getCurrentTrick()
         if currentTrick.len() == 1:
             firstCardRank = currentTrick.first().getRank().value
-            bestCardRankChoose = list(filter(lambda card : card.getRank().value > firstCardRank and card.getRank().value <= firstCardRank+3, cards))
+            bestCardRankChoose = list(filter(lambda card : card.getRank().value > firstCardRank and card.getRank().value <= firstCardRank+2, cards))
             if bestCardRankChoose:
                 chossenCard = random.choice(bestCardRankChoose)
             else:
@@ -38,15 +38,15 @@ class Bot(PlayerMoveHandler):
             if (botCradRank + botHighestCardRank) > playerCardsRank:
                 chossenCard = list(filter(lambda card : card.getRank().value == botHighestCardRank, cards))[0]
             else:
-                chossenCard = random.choice(cards)
+                chossenCard = list(filter(lambda card : card.getRank().value == min(map(lambda card : card.getRank().value, cards)),cards))[0]
         else:
             chossenCard = random.choice(cards)
         self.cardChoosingAnimation(4)
         return self._game.tryPlaceCardByActivePlayer(chossenCard)
         
-    def _handleExchangeMove(self) -> BaseResult:
-        lackingSuits = self.lackingSuitsCalculator()        
-        chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer  = self._opponent._nonActivePlayerChoices(lackingSuits)
+    def _handleExchangeMove(self, game: Game) -> BaseResult:
+        lackingSuits = self.lackingSuitsCalculator(game)        
+        chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer  = self._opponent._nonActivePlayerChoices(lackingSuits, game)
         
         os.system("cls")
         print(self._game)

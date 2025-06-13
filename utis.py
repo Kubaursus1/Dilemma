@@ -8,7 +8,7 @@ from gameState import GameResult
 from player import Player
 
 
-def printWinner(game: Game, gameMode: int):
+def printWinner(game: Game, gameMode: int) -> None:
     result = ""
     match game.getGameResult():
         case GameResult.WINNER_FIRST:
