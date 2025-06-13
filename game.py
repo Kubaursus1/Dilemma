@@ -9,6 +9,7 @@ from trick import Trick
 from deck import Deck
 from player import Player
 from gameState import GameState, GameResult
+from utis import is_valid_uuid
 
 class Game:                    
     class GameProxy:
@@ -198,8 +199,10 @@ class Game:
     def getGameState(self) -> GameState:
         return self.__gameState
     def __repr__(self) -> str:
-        return f" State: {self.__gameState} \n Deck: {self.__deck}\n Tricks: {self.__tricks} \n Leader: {self.__leader} \n Non-leader: {self.__nonLeader} \nActive: {self.__activePlayer.getName()} "    
+        return f""" State: {self.__gameState} \n Deck: {self.__deck}\n Tricks: {self.__tricks} \n Leader: {self.__leader}  \n 
+        Non-leader: {self.__nonLeader} \nActive: {self.__activePlayer.getName()} """    
     def __str__(self) -> str:
-        return f" Tricks: {self.__tricks} \n {self.__firtsName}: {self.getPlayerByName(self.__firtsName).getScore()} \n {self.__secondName if not isinstance(self.__secondName, uuid.UUID) else 'Bot'}: {self.getPlayerByName(self.__secondName).getScore()} "    
+        return f""" Tricks: {self.__tricks} \n {self.__firtsName}: {self.getPlayerByName(self.__firtsName).getScore()} \n 
+    {self.__secondName if not is_valid_uuid(self.__secondName) else 'Bot'}: {self.getPlayerByName(self.__secondName).getScore()} """    
     def getTricks(self) ->Tricks:
         return self.__tricks

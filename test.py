@@ -7,7 +7,7 @@ import os
 import uuid
 
 from gameState import GameState
-from utis import printWinner
+from utis import printWinner, is_valid_uuid
 
 
 def singleGameLoop(game:Game,playersDict:dict[str,PlayerMoveHandler], gameMode: int):
@@ -32,7 +32,7 @@ def createGame(gameMode) -> tuple[Game, dict[str, PlayerMoveHandler]]:
     def __preparingPlayers(gameMode):
         if int(gameMode) == 1:
             firstPlayerName = input("Podaj imię gracza ")
-            secondPlayerName = uuid.uuid4()
+            secondPlayerName = str(uuid.uuid4())
             human = Human(firstPlayerName)
             bot = Bot(secondPlayerName)
             human.setOpponent(bot)
@@ -49,7 +49,7 @@ def createGame(gameMode) -> tuple[Game, dict[str, PlayerMoveHandler]]:
         return firstPlayerName,secondPlayerName,playerDict
     firstPlayerName, secondPlayerName, playerDict = __preparingPlayers(gameMode)
 
-    while(firstPlayerName == secondPlayerName or len(firstPlayerName) == 0 or (len(secondPlayerName) == 0 if not isinstance(secondPlayerName, uuid.UUID) else False)):
+    while(firstPlayerName == secondPlayerName or len(firstPlayerName) == 0 or (len(secondPlayerName) == 0 if not is_valid_uuid(secondPlayerName) else False)):
         print()
         print("Imiona graczy muszą być różne i nie puste") if gameMode == 2 else print("Imię gracza nie może być puste")
         firstPlayerName, secondPlayerName, playerDict = __preparingPlayers(gameMode)

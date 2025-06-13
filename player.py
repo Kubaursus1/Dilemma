@@ -2,6 +2,7 @@ import copy
 import uuid
 from card import Card
 from cardscollection import CardsCollection
+from utis import is_valid_uuid
 
 class Player(CardsCollection):
     def __init__(self, name:str):
@@ -19,7 +20,7 @@ class Player(CardsCollection):
         return copy.copy(self.__hand)
     
     def __repr__(self) -> str:
-        return self.__name if not isinstance(self.__name, uuid.UUID) else "Bot"
+        return self.__name if not is_valid_uuid(self.__name) else "Bot"
     
     def assignScore(self, trick):
         last_card = trick.last()
