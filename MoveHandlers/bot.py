@@ -7,7 +7,7 @@ from suit import Suit
 
 class Bot(PlayerMoveHandler):
 
-    def _nonActivePlayerChoices(self,lackingSuits, game:Game) -> tuple[Card, Suit]:
+    def _nonActivePlayerChoices(self,lackingSuits) -> tuple[Card, Suit]:
         print("Bot wybiera kartę")
         self.cardChoosingAnimation(6)
         chosenCardByNonActivePlayer = random.choice(list(filter(lambda card : card.getSuit().value in lackingSuits, self._game.getNonActivePlayer().getHand())))
@@ -44,9 +44,9 @@ class Bot(PlayerMoveHandler):
         self.cardChoosingAnimation(4)
         return self._game.tryPlaceCardByActivePlayer(chossenCard)
         
-    def _handleExchangeMove(self, game: Game) -> BaseResult:
-        lackingSuits = self.lackingSuitsCalculator(game)        
-        chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer  = self._opponent._nonActivePlayerChoices(lackingSuits, game)
+    def _handleExchangeMove(self) -> BaseResult:
+        lackingSuits = self.lackingSuitsCalculator(self._game)        
+        chosenCardByNonActivePlayer, chosenSuitByNonActivePlayer  = self._opponent._nonActivePlayerChoices(lackingSuits, self._game)
         
         os.system("cls")
         print(self._game)

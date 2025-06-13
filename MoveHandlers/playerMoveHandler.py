@@ -24,7 +24,7 @@ class PlayerMoveHandler:
         cards = list(filter(lambda card : card.getSuit().value in suits, targetPlayer.getHand()))
         print(f"[{colorama.Fore.GREEN}{cards[0]}{colorama.Style.RESET_ALL}",", " + ", ".join(str(card) for card in cards[1:]) if len(cards) != 1 else "", "]", sep="")
         return chooseCardWithKeyboard(self._game,cards, targetPlayer, additionalText=additionlText if additionlText !=None else None)
-    def lackingSuitsCalculator(self):
+    def lackingSuitsCalculator(self)->set[str]:
         trickSuits = set(map( lambda card : card.getSuit().value, self._game.getTricks().getCurrentTrick().getAllCards()))
         allSuits = set(e.value for e in Suit)
         lackingSuits = allSuits-trickSuits
