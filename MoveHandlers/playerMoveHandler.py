@@ -2,7 +2,7 @@ import time
 import colorama
 from MoveResult.baseResult import BaseResult
 from card import Card
-import game
+
 from player import Player
 from suit import Suit
 from utis import chooseCardWithKeyboard
@@ -11,7 +11,11 @@ from utis import chooseCardWithKeyboard
 class PlayerMoveHandler:
     def __init__(self, name):
         self._name = name
-        
+     
+    
+    def setGame(self,game):
+        self._game = game
+    
     def setOpponent(self,opponent:"PlayerMoveHandler"):
         self._opponent = opponent        
         
@@ -20,9 +24,9 @@ class PlayerMoveHandler:
             
         cards = list(filter(lambda card : card.getSuit().value in suits, targetPlayer.getHand()))
         print(f"[{colorama.Fore.GREEN}{cards[0]}{colorama.Style.RESET_ALL}",", " + ", ".join(str(card) for card in cards[1:]) if len(cards) != 1 else "", "]", sep="")
-        return chooseCardWithKeyboard(cards, targetPlayer, additionalText=additionlText if additionlText !=None else None)
+        return chooseCardWithKeyboard(self._game,cards, targetPlayer, additionalText=additionlText if additionlText !=None else None)
     def lackingSuitsCalculator(self):
-        trickSuits = set(map( lambda card : card.getSuit().value, game.getTricks().getCurrentTrick().getAllCards()))
+        trickSuits = set(map( lambda card : card.getSuit().value, self._game.getTricks().getCurrentTrick().getAllCards()))
         allSuits = set(e.value for e in Suit)
         lackingSuits = allSuits-trickSuits
         return lackingSuits
@@ -33,8 +37,8 @@ class PlayerMoveHandler:
                 print(f"\r{i}", end="")
                 time.sleep(0.15)  
     
-    def handlePlayerMove(self,game:game.Game)-> BaseResult:
-        return self._handleExchangeMove() if game.getActivePlayerCanNotPlaceCard() else self._handlePlaceCardMove()
+    def handlePlayerMove(self)-> BaseResult:
+        return self._handleExchangeMove() if self._game.getActivePlayerCanNotPlaceCard() else self._handlePlaceCardMove()
         
     def _handlePlaceCardMove(self) -> BaseResult:
         pass

@@ -4,7 +4,6 @@ import colorama
 import keyboard
 from card import Card
 from game import Game
-import game
 from gameState import GameResult
 from player import Player
 
@@ -23,7 +22,7 @@ def printWinner(game: Game, gameMode: int):
             result = "No one wins. Draw"
     print(result)
 
-def chooseCardWithKeyboard(hand: list[Card] | list[str], targetPlayer: Player, additionalText=None) -> Card:
+def chooseCardWithKeyboard(game:Game,hand: list[Card] | list[str], targetPlayer: Player, additionalText=None) -> Card:
     i = 0
     chosenCard = None
     def refreshTerminal():

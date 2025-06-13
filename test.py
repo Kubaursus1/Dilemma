@@ -19,7 +19,7 @@ def singleGameLoop(game:Game,playersDict:dict[str,PlayerMoveHandler], gameMode: 
             print(isError)
             isError = None
         activePlayerName = game.getActivePlayer().getName()
-        result = playersDict[activePlayerName].handlePlayerMove(game)
+        result = playersDict[activePlayerName].handlePlayerMove()
         if isinstance(result, ErrorResult):
             isError = result
     playersNames = list(playersDict.keys())
@@ -55,6 +55,8 @@ def createGame(gameMode) -> tuple[Game, dict[str, PlayerMoveHandler]]:
         firstPlayerName, secondPlayerName, playerDict = __preparingPlayers(gameMode)
 
     game = Game(firstPlayerName, secondPlayerName)
+    for player in list(playerDict.values()):
+        player.setGame(game)
         
     return (game, playerDict)
 
